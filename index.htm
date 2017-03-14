@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Asynchronous JS</title>
+	<link rel="stylesheet" href="reveal.css">
+	<link rel="stylesheet" href="theme.css">
+	<link rel="stylesheet" href="font-awesome.css">
+	<link rel="icon" href="favicon.ico" />
+	<link rel="stylesheet" href="css/print/pdf.css" media="print">
+</head>
+
+<body>
+
+
+	<div class="reveal">
+		<div class="slides">
+			<section data-background="#ed1c40">
+				<h1 style="color: #ffffff">
+					<span class="fa fa-fw fa-2x fa-meetup"></span>
+					<div style="text-transform: none; margin-top:1em; font-size: .5em;">JavaScript North West Meetup</div>
+				</h1>
+			</section>
+			<section id="title">
+				<section>
+					<img title="Asynchronous JS" src="https://www.evolutionjobs.com/uploads/async-js-banner.jpg" border=0>
+					<div style="">
+						<div style="margin:1em 0;">
+							<img src="img/kxh_sq.jpg" border="0" style="border: none; border-radius: 50%; width: 2em; height: 2em; vertical-align: middle; margin: 0 .5em 0 0;">
+							<a href="mailto:keith.henry@evolutionjobs.co.uk">keith.henry@evolutionjobs.co.uk</a>
+						</div>
+
+						<div style="margin:1em 0;">
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-lg fa-twitter"></span> <a href="https://twitter.com/KHenry">@khenry</a>
+							</div>
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-lg fa-github"></span> <a href="https://github.com/KeithHenry">KeithHenry</a>
+							</div>
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-lg fa-stack-overflow"></span>
+								<a href="http://stackexchange.com/users/689">
+									<img src="http://stackexchange.com/users/flair/689.png" width="208" height="58" alt="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites"
+										title="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites" style="border: 0; padding: 0; margin: 0; vertical-align: middle;">
+								</a>
+							</div>
+						</div>
+					</div>
+				</section>
+			</section>
+			<section id="poll">
+				<section>
+					<h2>Poll:</h2>
+					<div style="text-align: left;">
+						<p>Have you used...</p>
+						<ul>
+							<li class="fragment"><code class="javascript inline">async</code>/<code class="javascript inline">await</code> in C#?</li>
+							<li class="fragment"><code class="javascript inline">yield return</code> in C#?</li>
+							<li class="fragment"><code class="javascript inline">Promise</code> in JS?</li>
+							<li class="fragment"><code class="javascript inline">function*</code> generators in JS?</li>
+							<li class="fragment">Typescript or Babel to transpile JS?</li>
+							<li class="fragment">Node.js?</li>
+							<li class="fragment">event callbacks in JS?</li>
+						</ul>
+					</div>
+				</section>
+				<section style="text-align: left;" data-background="#009688">
+					<h3>Multithreading in JS</h3>
+					<div>JS is not multi-threaded<span class="fragment"> (sort of, a lot of browser optimisations actually are.)</span></div>
+					<div class="fragment"><i>Your</i> code executes on a single thread.</div>
+					<div class="fragment">(Unless you're using a <code>Worker</code>, but that's for another time.)</div>
+					<div class="fragment">In asynchronous JS we're dealing with things that happen <i>outside</i> of JS, coming back onto that main thread.</div>
+				</section>
+			</section>
+			<section id="callbacks">
+				<section>
+					<h2>Callback Hell</h2>
+					<p>AKA: the problem.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Event Callbacks</h3>
+					<p>The standard way of dealing with any JS event</p>
+					<pre><code class="javascript">// Fire doSomething() when the user clicks the element
+element.addEventListener('click', doSomething);</code></pre>
+					<p>Here the asynchronous thing is the user.</p>
+					<p>Thanks to JS being single threaded (sort of) <code class="javascript inline">doSomething()</code> is going to finish
+						before any other user initiated event can fire.</p>
+					<p>So far, so good. Almost all JS developers will have used this pattern.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Branches &amp; Chains</h3>
+					<p>A lot of events aren't due to user input (or maybe they just start with user input)</p>
+					<p>Often we want to do on asynchronous action after completing another - a chain.</p>
+					<p>Or we want to apply logic: if asynchronous check is true then do something different - a branch.</p>
+					<p>Error handling is essentially another branch.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Example: Overview</h3>
+					<p>AJAX/HTTP-request collection of items from server</p>
+					<p>Cache results locally in <code class="javascript inline">IndexedDB</code></p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Example: Flow</h3>
+					<ol style="font-size: .8em;">
+						<li>HTTP request a collection of record IDs.
+							<ol>
+								<li>JSON parse the raw response into an array. <span class="fragment hl-callback" data-fragment-index=0>callback from 1</span></li>
+								<li>For each ID:
+									<ol>
+										<li>Check <code class="javascript">IndexedDB</code> for a local copy.</li>
+										<li>Found locally: continue loop 1.2 <span class="fragment hl-callback" data-fragment-index=0>callback from 1.2.1</span></li>
+										<li>Not found: HTTP request the data. <span class="fragment hl-callback" data-fragment-index=0>callback from 1.2.1</span>
+											<ol>
+												<li>JSON parse the raw response <span class="fragment hl-callback" data-fragment-index=0>callback from 1.2.3</span></li>
+												<li>Add the item to <code class="javascript inline">IndexedDB</code></li>
+												<li>Continue loop 1.2 <span class="fragment hl-callback" data-fragment-index=0>callback from 1.2.3.2</span></li>
+												<li class="fragment hl-exception" data-fragment-index=1>Error from 1.2.3 - failed HTTP request</li>
+												<li class="fragment hl-exception" data-fragment-index=1>Error from 1.2.3.2 - failed <code class="javascript inline">IndexedDB put</code></li>
+											</ol>
+										</li>
+										<li class="fragment hl-exception" data-fragment-index=1>Error 3.3 - failed <code class="javascript inline">IndexedDB get</code>
+									</ol>
+									</li>
+									<li class="fragment hl-exception" data-fragment-index=1>Error from 1 - failed HTTP request</li>
+							</ol>
+							</li>
+							<li>Sort the results <span class="fragment hl-callback" data-fragment-index=0>callback from 1.2 loop completed</span></li>
+							<li>Do something with the sorted results.</li>
+							<li class="fragment hl-exception" data-fragment-index=1>Error from 3 - failed final action.</li>
+					</ol>
+				</section>
+				<section style="text-align: left;">
+					<h3>Example: Conclusion</h3>
+					<p>You can see actual code that does this at <a href="https://www.evolutionjobs.com/uk/media/async-programming-in-js-76719/">https://www.evolutionjobs.com/uk/media/async-programming-in-js-76719</a></p>
+					<p>This nested soup of callbacks is called: <i>Callback Hell</i></p>
+					<ul class="fragment">
+						<li>Changing control flow is hard.</li>
+						<li>Exception handling is easy to miss.</li>
+						<li>Decoupled or modular code is hard to write when result actions need to be passed right along a callback chain.</li>
+					</ul>
+				</section>
+			</section>
+			<section id="promise">
+				<section>
+					<h2><code class="javascript inline">Promise</code></h2>
+					<p>An object that represents an asynchronous action.</p>
+				</section>
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Terminology</h3>
+					<p>Promises have been around as an idea for a long time, and have a lot of similar concepts:</p>
+					<ul>
+						<li class="fragment"><i>thenable</i> - anything with a <code class="javascript inline">.then()</code> continuation.</li>
+						<li class="fragment"><i>future</i> - in a couple of implementations future is a cut down promise.</li>
+						<li class="fragment"><i>deferred</i> - <a href="https://api.jquery.com/category/deferred-object/">jQuery's implementation</a>.</li>
+						<li class="fragment"><i>task</i> - in .NET</li>
+					</ul>
+				</section>
+				<section style="text-align: left;">
+					<h3><code class="javascript inline">Promise</code> is the New API Standard</h3>
+					<p>Most promises will be returned by APIs - you'll be consuming them.</p>
+					<p>All new APIs use them.</p>
+					<ul>
+						<li><a href="https://developers.google.com/web/updates/2015/03/introduction-to-fetch">Fetch API</a></li>
+						<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Cache">Cache API</a></li>
+						<li><a href="https://developer.mozilla.org/en/docs/Web/API/Battery_Status_API">Battery Status API</a></li>
+						<li><a href="https://webbluetoothcg.github.io/web-bluetooth/">Bluetooth API</a></li>
+						<li>And so on...</li>
+					</ul>
+				</section>
+				<section style="text-align: left;">
+					<h3>Making a <code class="javascript inline">Promise</code>: Example</h3>
+					<pre><code class="javascript">// Use a promise where you would have a callback
+function doThingPromise(input) {
+    // Init a promise with a function that has two function parameters
+    return new Promise(function (resolve, reject) {
+        // Wrap a callback
+		doThingCallback(input, function (result) {
+			resolve(result);
+		}, function (err) {
+			reject(err);
+		} )
+    });
+}</code></pre>
+				</section>
+				<section style="text-align: left;color:#000000;" data-background="#FFEA00">
+					<h3 style="color:#000000;">Making a <code class="javascript inline">Promise</code>: Golden Rule</h3>
+					<p style="font-weight: bold;">When you make a promise, you always follow through.</p>
+					<p class="fragment">Just like real life!</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Making a <code class="javascript inline">Promise</code></h3>
+					<p>In practice this means you always resolve or reject the <code class="javascript inline">Promise</code>.</p>
+					<p>If there is a path through the <code class="javascript inline">Promise</code> that doesn't resolve or reject then that's
+						a fire-n-forget bug.</p>
+					<p>Keep promises small and low level.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Consuming a <code class="javascript inline">Promise</code></h3>
+					<p><code class="javascript inline">.then([onResolved], [onRejected])</code> fires when the <code class="javascript inline">Promise</code>						completes.</p>
+					<p class="fragment" data-fragment-index=0>If <code class="javascript inline">resolve</code> then <code class="javascript inline">onResolved</code> is called.</p>
+					<p class="fragment" data-fragment-index=0>If <code class="javascript inline">reject</code> then <code class="javascript inline">onRejected</code> is called.</p>
+					<p class="fragment" data-fragment-index=1>If neither then <code class="javascript inline">.then()</code> never fires!</p>
+				</section>
+				<section data-background="#444444">
+					<h3>Chaa-aaa-ins!</h3>
+					<iframe width="800" height="600" src="https://www.youtube.com/embed/5z-dJ35fOiM" frameborder="0" allowfullscreen></iframe>
+				</section>
+				<section style="text-align: left;">
+					<h3>Consuming a <code class="javascript inline">Promise</code>: Chains</h3>
+					<p><code class="javascript inline">.then()</code> also returns a <code class="javascript inline">Promise</code></p>
+					<p><code class="javascript inline">onResolved</code> can be:
+						<ul>
+							<li class="fragment"><code class="javascript inline">undefined</code> - <code class="javascript inline">onRejected</code> is still checked.</li>
+							<li class="fragment">A function that returns a value - continue with that value.
+								<pre><code class="javascript">// JSON parse the promise result and then log it
+doThingPromise(input).then(JSON.parse).then(console.log);</code></pre>
+							</li>
+							<li class="fragment">A function that returns another <code class="javascript inline">Promise</code> - continue the chain:
+								<pre><code class="javascript">// Fetch a URL and pass the result to our Promise
+fetch(url).then(doThingPromise).then(JSON.parse).then(console.log);</code></pre>
+							</li>
+						</ul>
+					</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>The Power of <code class="javascript inline">Promise</code></h3>
+					<p>Chains are a much better way of dealing with sequences of callbacks.</p>
+					<p>Exceptions are also chained, and can be easily intercepted or caught right at the end</p>
+					<pre><code class="javascript">// logException gets called if any of the chain rejects
+fetch(url).then(doThingPromise).then(JSON.parse).catch(logException);</code></pre>
+				</section>
+			</section>
+			<section data-background="#009688" id="generators">
+				<section data-background="#009688">
+					<h2>Generators</h2>
+					<p><code class="javascript inline">function*</code> that returns multiple values with <code class="javascript inline">yield</code></p>
+					<p class="fragment">Generators are syntactic sugar - they generate a state machine so you don't have to.</p>
+				</section>
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Iterator</h3>
+					<p>Generators can be consumed as <i>iterators</i>:</p>
+					<pre><code class="javascript">// Out only generator function
+function* getThings(start) {
+	yield start * 2;
+	yield start * 3;
+	return start * 4;
+}</code></pre>
+					<p><i>Pull</i> consumed with:</p>
+					<pre><code class="javascript">var generator = getThings(1);
+var item = generator.next();
+while(!item.done) {
+	console.log(item.value);
+	item = generator.next();
+}</code></pre>
+				</section>
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Iterator Syntax</h3>
+					<pre><code class="javascript">// For-of
+for(let x of getThings(1))
+    console.log(x);
+</code></pre>
+
+					<pre><code class="javascript">// Spread operator
+const arrayOfAll = [...getThings(1)];</code></pre>
+
+					<pre><code class="javascript">// Access the iterator function
+var myObj = {};
+myObj[Symbol.iterator] = function* () { /* custom iterator */ };
+
+var nativeIterator = getThings(1)[Symbol.iterator];
+// Early examples may refer to this as @@iterator, now deprecated.</code></pre>
+
+				</section>
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Push</h3>
+					<p>Generators can also have values pushed to them with <code class="javascript inline">yield</code> also passing back a value:</p>
+					<pre><code class="javascript">// In/out generator function
+function* keepGettingThings(start) {
+	var keepGoing = true;
+	while (keepGoing)
+		// After the code yielded to has called .next
+		keepGoing = yield ++start;
+
+	return start;
+}</code></pre>
+					<p><i>Push</i> consumed with:</p>
+					<pre><code class="javascript">var generator = getThings(3);
+var item = generator.next(true);
+while (!item.done) {
+	console.log(item.value);
+
+    // Pass back true until we get to 10
+	item = generator.next(item.value < 10);
+}</code></pre>
+				</section>
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Generators are Synchronous</h3>
+					<p>This isn't asynchronous code, we're just passing the active thread back and forth.</p>
+				</section>
+			</section>
+			<section id="async_await">
+				<section>
+					<h2><code class="javascript inline">async</code> &amp; <code class="javascript inline">await</code></h2>
+					<p>The future.</p>
+					<p class="fragment" style="font-size:.8em;">Except for Node.js, TypeScript, Babel, Chrome and (most recently) FireFox, where it is already here.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3><code class="javascript inline">async</code>/<code class="javascript inline">await</code> vs <code class="javascript inline">Promise</code></h3>
+					<p><code class="javascript inline">async</code>/<code class="javascript inline">await</code> is syntactic sugar for a <code class="javascript inline">Promise</code>.</p>
+					<p><code class="javascript inline">async</code> says: This function will return a <code class="javascript inline">Promise</code>.</p>
+					<p><code class="javascript inline">await</code> says: return a <code class="javascript inline">new Promise</code> here,
+						and put everything after this in a <code class="javascript inline">.then()</code>.</p>
+				</section>
+				<section style="text-align: left;">
+					<h3>Comparison: Promise</h3>
+					<div>
+						<pre><code class="javascript">// With async/await
+async function doSomethingAsync(input) {
+	const url = BuildUrl(input);
+	const response = await fetch(url);
+	if(!response.ok)
+		throw new Error(response.statusText);
+
+	return response.json();
+}</code></pre>
+					</div>
+					<div class="fragment">
+						<pre><code class="javascript">// Without
+function doSomethingPromised(input) {
+	var url = BuildUrl(input);
+	return fetch(url).then(function(response) {
+		if(!response.ok)
+			throw new Error(response.statusText);
+
+		return response.json();
+	});
+}</code></pre>
+					</div>
+					<p class="fragment">Almost! You can think of it this way, but it's using a generator.</p>
+				</section>
+				<section style="text-align: left;" data-background="#009688">
+					<h3>Comparison 2: Generators</h3>
+					<div>
+						<pre><code class="javascript">// With async/await
+async function doSomethingAsync(input) {
+	const url = BuildUrl(input);
+	const response = await fetch(url);
+	if(!response.ok)
+		throw new Error(response.statusText);
+
+	return await response.json();
+}</code></pre>
+					</div>
+					<div class="fragment">
+						<div style="width:50%;float:left;">
+							<pre><code class="javascript">// With generator, looks similar
+function* doSomethingGenerated(input) {
+	var url = BuildUrl(input);
+	var response = yield fetch(url);
+	if(!response.ok)
+		throw new Error(response.statusText);
+
+	return response.json();
+}</code></pre>
+						</div>
+						<div style="width:50%;float:left;" class="fragment">
+							<pre><code class="javascript">// Pseudo-code consumer for generator
+var generator = doSomethingGenerated(input);
+var promiseResponse = generator.next().value;
+promiseResponse.then(function(result) {
+		var promiseJson = generator.next(result).value;
+		promiseJson.then(function(result) {
+			// Resolve the outer promise
+			resolve(result);
+		},
+		generator.error)
+	},
+	generator.error);</code></pre>
+						</div>
+					</div>
+				</section>
+
+				<section style="text-align: left;" data-background="#009688">
+					<h3>Extra Credit</h3>
+					<p>Not supported yet, but what should this return?</p>
+					<pre><code class="javascript">async function* both() { ...</code></pre>
+
+					<table class="fragment">
+						<tr>
+							<td></td>
+							<th scope="col">Synchronous</th>
+							<th scope="col">Asynchronous</th><tr>
+						<tr>
+							<th scope="row">Singular</th>
+							<td><code class="javascript inline">function</code></td>
+							<td><code class="javascript inline">Promise</code>/<code class="inline javascript">async function</code></td>
+						<tr>
+						<tr>
+							<th scope="row">Plural</th>
+							<td>Iterator <code class="inline javascript">function*</code></td>
+							<td>
+								<i class="fragment">Observable</i>
+								<code class="javascript inline">async function*</code>
+							</td>
+						<tr>
+					</table>
+
+					<p class="fragment"><a href="https://tc39.github.io/proposal-async-iteration/">Asynchronous iterators</a> and/or/vs <a href="https://tc39.github.io/proposal-observable/">Observable</a> are rival implementations in what will become ES2018, maybe.</p>
+					<p class="fragment">See also Reactive Extensions <a href="https://github.com/Reactive-Extensions/RxJS">RxJS</a></p>
+				</section>
+
+				<section style="text-align: left;">
+					<h3>'Rules' of <code class="javascript inline">async</code></h3>
+					<p>Once you go <code class="javascript inline">async</code> you never go back - functions that call <code class="javascript inline">async</code> code tend to need to be <code class="javascript inline">async</code> too.</p>
+					<p>When a function calls an <code class="javascript inline">async</code> then it can:</p>
+					<ul>
+						<li>Fire-and-forget (make a request with no callback).</li>
+<li>Be <code class="javascript inline">async</code> too and call the nested function with <code class="javascript inline">await</code>.</li>
+<li>Pass the returned <code class="javascript inline">Promise</code> on up to the caller (in which case the caller now needs to be <code class="javascript inline">async</code> too).</li>
+					</ul>
+				</section>
+
+				<section style="text-align: left;">
+					<h3>Using <code class="javascript inline">async</code> in Synchronous Code</h3>
+<p>If you don't <code class="javascript inline">await</code> an <code class="javascript inline">async</code> function then you get a <code class="javascript inline">Promise</code>:</p>
+							<pre><code class="javascript">// Pseudo-code consumer for generator
+async function getThing() {
+    const thing = await ajaxThing();
+    return thing;
+}
+
+// Then
+let t = await getThing(); // t will be the thing, once getThing() has finished
+
+let p = getThing(); // p will immediately be a promise, that resolves with the
+                    // thing once getThing() has finished
+
+// Either of these will get us the thing
+p.then(t => /* We have t */);
+t = await p;</code></pre>
+				</section>
+			</section>
+			<section data-background="#009688" id="vsDotNet">
+				<section data-background="#009688">
+					<h2>JS vs .NET</h2>
+					<p>.NET has supported <code class="javascript inline">async</code>/<code class="javascript inline">await</code> since C#5.</p>
+				</section data-background="#009688">
+
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Similar Concepts</h3>
+					<p><code class="csharp inline">Task&lt;T&gt;</code> instead of <code class="javascript inline">Promise</code></p>
+					<p><code class="csharp inline">yield return</code> instead of <code class="javascript inline">yield</code></p>
+					<p class="fragment">(Though iterators work quite differently in .NET)</p>
+				</section>
+
+				<section data-background="#009688" style="text-align: left;">
+					<h3>JS Cannot Block</h3>
+					<p>.NET can block: wait synchronously for an asynchronous operation.</p>
+<pre><code class="csharp">// Call Result to stop and wait for the task to complete 
+var task = GetSomethingAsync();
+var block = task.Result;</code></pre>
+<p class="fragment">However, in .NET this is almost always a bad idea.</p>
+<p class="fragment">It's bad for performance and prone to thread deadlock bugs, expect to need <code class="csharp inline">task.ConfigureAwait(false)</code> lots.</p>
+				</section>
+			</section>
+			<section data-background="#009688" id="vsTheWorld">
+				<section data-background="#009688">
+					<h2>Other Languages</h2>
+					<p><code class="javascript inline">async</code>/<code class="javascript inline">await</code> support is coming in other languages too.</p>
+				</section>
+
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Python</h3>
+					<p>3.2 added generators with <code class="python inline">yield from</code>.</p>
+					<p>3.2 also added futures, which are similar to <code class="javascript inline">Promise</code> or <code class="csharp inline">Task</code></p>
+					<p>3.5 brought full support for <code class="javascript inline">async</code>/<code class="javascript inline">await</code>.</p>
+				</section>
+
+				<section data-background="#009688" style="text-align: left;">
+					<h3>PHP?</h3>
+					<p>PHP 5.5 <a href="http://php.net/manual/en/migration55.new-features.php">supports generators</a> and <code class="php inline">yield</code>.</p>
+					<p>There is a <a href="https://github.com/async-interop">PHP Asynchronous Group</a> that has written a <a href="https://github.com/async-interop/promise">promise implementation</a>.</p>
+					<p class="fragment">PHP is a <i>long</i> way from supporting <code class="javascript inline">async</code>/<code class="javascript inline">await</code>.</p>
+					<!-- http://jonathonstaff.com/blog/whosever-holds-this-hammer/ -->
+				</section>
+				
+				<section data-background="#009688">
+					<h3>Java?</h3>
+				</section>
+
+				<section data-background="https://media.giphy.com/media/ToMjGpAPp3lhohHlyFy/giphy.gif">
+
+				</section>
+
+				<section data-background="#009688" style="text-align: left;">
+					<h3>Seriously Java?</h3>
+					<p>Java has a lot of good libraries and is very powerful, but it's <i>extremely</i> slow to develop new language features (typically 5-10 years behind C#).</p>
+					<p><a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html">Java 8 has <code class="java inline">CompletableFuture</code></a>, which is similar to <code class="javascript inline">Promise</code> or <code class="csharp inline">Task</code>.</p>
+					<p class="fragment">No support for generators or <code class="php inline">yield</code>.</p>
+					<p class="fragment"><code class="javascript inline">async</code>/<code class="javascript inline">await</code> support is a <b>very</b> long way away.</p>
+				</section>
+			</section>
+
+			<section id="conclusion">
+				<section>
+					<h2>Conclusion</h2>
+				</section>
+				<section>
+					<h3>Callbacks are Painful</h3>
+				</section>
+				<section>
+					<h3><code class="javascript inline">Promise</code> is Better</h3>
+				</section>
+				<section>
+					<h3><code class="javascript inline">async</code>/<code class="javascript inline">await</code> Makes Using <code class="javascript inline">Promise</code> Easy</h3>
+				</section>
+				<section style="text-align: left;">
+					<h3>Conclusion</h3>
+					<p>Callbacks are painful</p>
+					<p><code class="javascript inline">Promise</code> is better</p>
+					<p><code class="javascript inline">async</code>/<code class="javascript inline">await</code> makes using <code class="javascript inline">Promise</code> easy</p>
+				</section>
+			</section>
+
+			<section id="questions">
+				<section data-background="http://i.giphy.com/hcpVSCSwDcKju.gif">
+
+				</section>
+				<section data-background="#9C27B0">
+					<h1>Questions?</h1>
+					<div>
+						<div style="margin:1em 0;">
+							<img src="img/kxh_sq.jpg" border="0" style="border: none; border-radius: 50%; width: 2em; height: 2em; vertical-align: middle; margin: 0 .5em 0 0;">
+							<a href="mailto:keith.henry@evolutionjobs.co.uk">keith.henry@evolutionjobs.co.uk</a>
+						</div>
+
+						<div style="margin:1em 0;">
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-twitter"></span> <a href="https://twitter.com/KHenry">@khenry</a>
+							</div>
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-github"></span> <a href="https://github.com/KeithHenry">KeithHenry</a>
+							</div>
+							<div style="width: 32%; display: inline-block;">
+								<span class="fa fa-fw fa-stack-overflow"></span>
+								<a href="http://stackexchange.com/users/689">
+									<img src="http://stackexchange.com/users/flair/689.png" width="208" height="58" alt="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites"
+										title="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites" style="border: 0; padding: 0; margin: 0; vertical-align: middle;">
+								</a>
+							</div>
+						</div>
+					</div>
+				</section>
+			</section>
+		</div>
+	</div>
+	<script type="text/javascript" src="plugin/highlight/highlight.js"></script>
+	<script type="text/javascript" src="reveal.js"></script>
+	<script>
+		Reveal.initialize({
+			controls: true,
+			progress: true,
+			history: true,
+			center: true,
+			transition: 'slide'
+		});
+
+		hljs.configure({
+			tabReplace: '    ' // 4 spaces
+		});
+
+		hljs.initHighlightingOnLoad();
+
+		var codes = document.querySelectorAll('code.inline:not(.hljs):not(.nohighlight)');
+		for(var i in codes) {
+			hljs.highlightBlock(codes[i]);
+		}
+			
+	</script>
+</body>
+
+</html>
