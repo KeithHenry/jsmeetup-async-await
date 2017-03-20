@@ -11,8 +11,6 @@
 </head>
 
 <body>
-
-
 	<div class="reveal">
 		<div class="slides">
 			<section data-background="#ed1c40" id="jsMeetupSplash">
@@ -192,13 +190,15 @@ function doThingPromise(input) {
 				</section>
 				<section id="makingPromise2" style="text-align: left;">
 					<h3>Making a <code class="javascript inline">Promise</code></h3>
-					<p>In practice this means you always resolve or reject the <code class="javascript inline">Promise</code>.</p>
-					<p>If there is a path through the <code class="javascript inline">Promise</code> that doesn't resolve or reject then that's
+					<p>This means you always resolve or reject the <code class="javascript inline">Promise</code>.</p>
+					<p class="fragment">If there is a path through the <code class="javascript inline">Promise</code> that doesn't resolve or reject then that's
 						a fire-n-forget bug.</p>
-					<p>Keep promises small and low level.</p>
+					<p class="fragment">Keep promises small and low level.</p>
 				</section>
 				<section id="makingPromiseExamples" data-background="#009688" style="text-align: left;">
 					<h3>Callback API to <code class="javascript inline">Promise</code></h3>
+					<p>Let's look at 3 implementations:</p>
+					<p class="fragment"><a href="https://www.evolutionjobs.com/uk/media/async-programming-in-js-76719/" target="_blank">ajaxPromise</a>: XMLHttpRequest wrapper</p>
 					<p class="fragment"><a href="https://github.com/KeithHenry/chromeExtensionAsync" target="_blank">chrome-extension-async</a>: Chrome's extension API</p>
 					<p class="fragment"><a href="https://github.com/jakearchibald/idb" target="_blank">idb</a>: IndexedDB</p>
 				</section>				
@@ -226,12 +226,19 @@ fetch(url).then(doThingPromise).then(JSON.parse).then(console.log);</code></pre>
 						</ul>
 					</p>
 				</section>
-				<section id="promiseConclusion" style="text-align: left;">
+				<section id="promisePower" style="text-align: left;">
 					<h3>The Power of <code class="javascript inline">Promise</code></h3>
 					<p>Chains are a much better way of dealing with sequences of callbacks.</p>
 					<p>Exceptions are also chained, and can be easily intercepted or caught right at the end</p>
 					<pre><code class="javascript">// logException gets called if any of the chain rejects
 fetch(url).then(doThingPromise).then(JSON.parse).catch(logException);</code></pre>
+				</section>
+
+				<section id="promiseProblems" style="text-align: left;">
+					<h3><code class="javascript inline">Promise</code> is not always better</h3>
+					<p>Promises work best where there is a single asynchronous thing to wait for.</p>
+					<p>Promises <i>only resolve once</i>.</p>
+					<p><span class="fragment">Ask a question,</span><span class="fragment"> wait, </span><span class="fragment">get an answer.<span></p>
 				</section>
 			</section>
 			<section>
@@ -250,8 +257,8 @@ function* getThings(start) {
 	return start * 4;
 }</code></pre>
 					<p><i>Pull</i> consumed with:</p>
-					<pre><code class="javascript">var generator = getThings(1);
-var item = generator.next();
+					<pre><code class="javascript">let generator = getThings(1);
+let item = generator.next();
 while(!item.done) {
 	console.log(item.value);
 	item = generator.next();
@@ -268,10 +275,10 @@ for(let x of getThings(1))
 const arrayOfAll = [...getThings(1)];</code></pre>
 
 					<pre><code class="javascript">// Access the iterator function
-var myObj = {};
+let myObj = {};
 myObj[Symbol.iterator] = function* () { /* custom iterator */ };
 
-var nativeIterator = getThings(1)[Symbol.iterator];
+let nativeIterator = getThings(1)[Symbol.iterator];
 // Early examples may refer to this as @@iterator, now deprecated.</code></pre>
 
 				</section>
@@ -280,7 +287,7 @@ var nativeIterator = getThings(1)[Symbol.iterator];
 					<p>Generators can also have values pushed to them with <code class="javascript inline">yield</code> also passing back a value:</p>
 					<pre><code class="javascript">// In/out generator function
 function* keepGettingThings(start) {
-	var keepGoing = true;
+	let keepGoing = true;
 	while (keepGoing)
 		// After the code yielded to has called .next
 		keepGoing = yield ++start;
@@ -288,8 +295,8 @@ function* keepGettingThings(start) {
 	return start;
 }</code></pre>
 					<p><i>Push</i> consumed with:</p>
-					<pre><code class="javascript">var generator = getThings(3);
-var item = generator.next(true);
+					<pre><code class="javascript">let generator = getThings(3);
+let item = generator.next(true);
 while (!item.done) {
 	console.log(item.value);
 
@@ -483,7 +490,7 @@ var block = task.Result;</code></pre>
 				<section id="vsPHP" data-background="#009688" style="text-align: left;">
 					<h3>PHP?</h3>
 					<p>PHP 5.5 <a href="http://php.net/manual/en/migration55.new-features.php" target="_blank">supports generators</a> and <code class="php inline">yield</code>.</p>
-					<p>There is a <a href="https://github.com/async-interop" target="_blank">PHP Asynchronous Group</a> that has written a <a href="https://github.com/async-interop/promise">promise implementation</a>.</p>
+					<p>The <a href="https://github.com/async-interop" target="_blank">PHP Asynchronous Group</a> has written a <a href="https://github.com/async-interop/promise">promise implementation</a>.</p>
 					<p class="fragment">PHP is a <i>long</i> way from supporting <code class="javascript inline">async</code>/<code class="javascript inline">await</code>.</p>
 					<!-- http://jonathonstaff.com/blog/whosever-holds-this-hammer/ -->
 				</section>
@@ -497,7 +504,7 @@ var block = task.Result;</code></pre>
 				</section>
 
 				<section id="vsJava" data-background="#009688" style="text-align: left;">
-					<h3>Seriously Java?</h3>
+					<h3>Seriously: Java?</h3>
 					<p>Java has a lot of good libraries and is very powerful, but it's <i>extremely</i> slow to develop new language features (typically 5-10 years behind C#).</p>
 					<p><a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html" target="_blank">Java 8 has <code class="java inline">CompletableFuture</code></a>, which is similar to <code class="javascript inline">Promise</code> or <code class="csharp inline">Task</code>.</p>
 					<p class="fragment">No support for generators or <code class="php inline">yield</code>.</p>
@@ -517,8 +524,8 @@ var block = task.Result;</code></pre>
 				</section>
 				<section>
 					<h3><code class="javascript inline">async</code>/<code class="javascript inline">await</code> Makes Using <code class="javascript inline">Promise</code> Easy</h3>
-				</section>
-				<section id="conclusion" style="text-align: left;">
+				</section> 
+				<section id="conclusion" data-background="#FF9800" style="text-align: left;color:#000000;">
 					<h3>Conclusion</h3>
 					<p>Callbacks are painful</p>
 					<p><code class="javascript inline">Promise</code> is better</p>
