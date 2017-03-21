@@ -240,6 +240,24 @@ fetch(url).then(doThingPromise).then(JSON.parse).catch(logException);</code></pr
 					<p>Promises <i>only resolve once</i>.</p>
 					<p><span class="fragment">Ask a question,</span><span class="fragment"> wait, </span><span class="fragment">get an answer.<span></p>
 				</section>
+
+				<section id="promisePitfallRace" style="text-align: left;" data-background="#009688">
+					<h3>Pitfall: <code class="javascript inline">Promise.race()</code></h3>
+					<p>What wins?</p>
+					<pre><code class="javascript">// Race
+var tortoise = slowPromise();
+var hare = fastPromise();
+var dnf = rejectPromise();
+var whoWins = Promise.race(tortoise, hare, dnf);
+</code></pre>
+					<p class="fragment">It depends on whether <code class="javascript inline">dnf</code> is quicker than <code class="javascript inline">hare</code>.</p>
+					<p class="fragment">
+						Think of it like motorsport: if anyone crashes there's a red flag and the race stops.
+						<span class="fa fa-fw fa-lg fa-flag" style="color:#F44336"></span>
+					</p>
+				
+				</section>
+
 			</section>
 			<section>
 				<section id="generators" data-background="#009688">
@@ -448,6 +466,22 @@ let p = getThing(); // p will immediately be a promise, that resolves with the
 // Either of these will get us the thing
 p.then(t => /* We have t */);
 t = await p;</code></pre>
+				</section>
+
+				<section id="asyncPitfallLoops" style="text-align: left;" data-background="#009688">
+					<h3>Pitfall: loops</h3>
+					<p>What does this do?</p>
+					<pre><code class="javascript">// Await loop
+const result = [];
+for(let id of idArray)
+	result.push(await getThing(id));
+return result;</code></pre>
+					<p class="fragment" data-fragment-index=0>Next doesn't start until previous has resolved.</p>
+					<pre class="fragment" data-fragment-index=1><code class="javascript">// Fix with await at end
+for(let id of idArray)
+	result.push(getThing(id));
+return await Promise.all(result);</code></pre>
+					<p class="fragment" data-fragment-index=1>Start all the promises in parallel, then <code class="javascript inline">await</code> once at the end.</p>
 				</section>
 			</section>
 			<section>
