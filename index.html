@@ -91,9 +91,9 @@ element.addEventListener('click', doSomething);</code></pre>
 				<section id="callbacksBranches" style="text-align: left;">
 					<h3>Branches &amp; Chains</h3>
 					<p>A lot of events aren't due to user input (or maybe they just start with user input)</p>
-					<p>Often we want to do on asynchronous action after completing another - a chain.</p>
-					<p>Or we want to apply logic: if asynchronous check is true then do something different - a branch.</p>
-					<p>Error handling is essentially another branch.</p>
+					<p class="fragment">Often we want to do on asynchronous action after completing another - a chain.</p>
+					<p class="fragment">Or we want to apply logic: if asynchronous check is true then do something different - a branch.</p>
+					<p class="fragment">Error handling is essentially another branch.</p>
 				</section>
 				<section id="callbacksExampleIntro" style="text-align: left;">
 					<h3>Example: Overview</h3>
@@ -425,17 +425,16 @@ promiseResponse.then(function(result) {
 					<p>Once you go <code class="javascript inline">async</code> you never go back - functions that call <code class="javascript inline">async</code> code tend to need to be <code class="javascript inline">async</code> too.</p>
 					<p>When a function calls an <code class="javascript inline">async</code> then it can:</p>
 					<ul>
-						<li>Fire-and-forget (make a request with no callback).</li>
-<li>Be <code class="javascript inline">async</code> too and call the nested function with <code class="javascript inline">await</code>.</li>
-<li>Pass the returned <code class="javascript inline">Promise</code> on up to the caller (in which case the caller now needs to be <code class="javascript inline">async</code> too).</li>
+						<li class="fragment">Fire-and-forget (make a request with no callback).</li>
+						<li class="fragment">Be <code class="javascript inline">async</code> too and call the nested function with <code class="javascript inline">await</code>.</li>
+						<li class="fragment">Pass the returned <code class="javascript inline">Promise</code> on up to the caller (in which case the caller now needs to be <code class="javascript inline">async</code> too).</li>
 					</ul>
 				</section>
 
 				<section id="asyncVsSync" style="text-align: left;">
 					<h3>Using <code class="javascript inline">async</code> in Synchronous Code</h3>
 <p>If you don't <code class="javascript inline">await</code> an <code class="javascript inline">async</code> function then you get a <code class="javascript inline">Promise</code>:</p>
-							<pre><code class="javascript">// Pseudo-code consumer for generator
-async function getThing() {
+							<pre><code class="javascript">async function getThing() {
     const thing = await ajaxThing();
     return thing;
 }
