@@ -449,6 +449,27 @@ promiseResponse.then(function(result) {
 					</ul>
 				</section>
 
+				<section id="asyncErrors" style="text-align: left;">
+					<h3>Using <code class="javascript inline">try-catch</code></h3>
+<p><code class="javascript inline">await</code> causes any chained exeception to be caught:</p>
+							<pre><code class="javascript">async function getThing() {
+	try {
+    	const thing = await ajaxThing();
+		if(thing.foo)
+			thing.bar = await ajaxOtherThing();
+
+        // Without an await this call is fire-n-forget,
+		// uncomment the await to include it in the try-catch
+		/*await*/ saveInLocalCache(thing);
+		return thing;
+	}
+	catch(err) {
+		// Any error thrown by any await
+	}
+}
+</code></pre>
+				</section>
+
 				<section id="asyncVsSync" style="text-align: left;">
 					<h3>Using <code class="javascript inline">async</code> in Synchronous Code</h3>
 <p>If you don't <code class="javascript inline">await</code> an <code class="javascript inline">async</code> function then you get a <code class="javascript inline">Promise</code>:</p>
@@ -527,17 +548,9 @@ var block = task.Result;</code></pre>
 					<p class="fragment">PHP is a <i>long</i> way from supporting <code class="javascript inline">async</code>/<code class="javascript inline">await</code>.</p>
 					<!-- http://jonathonstaff.com/blog/whosever-holds-this-hammer/ -->
 				</section>
-				
-				<section data-background="#009688">
-					<h3>Java?</h3>
-				</section>
-
-				<section data-background="https://media.giphy.com/media/ToMjGpAPp3lhohHlyFy/giphy.gif">
-
-				</section>
-
+	
 				<section id="vsJava" data-background="#009688" style="text-align: left;">
-					<h3>Seriously: Java?</h3>
+					<h3>Java?</h3>
 					<p>Java has a lot of good libraries and is very powerful, but it's <i>extremely</i> slow to develop new language features (typically 5-10 years behind C#).</p>
 					<p><a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html" target="_blank">Java 8 has <code class="java inline">CompletableFuture</code></a>, which is similar to <code class="javascript inline">Promise</code> or <code class="csharp inline">Task</code>.</p>
 					<p class="fragment">No support for generators or <code class="php inline">yield</code>.</p>
@@ -566,39 +579,34 @@ var block = task.Result;</code></pre>
 				</section>
 			</section>
 
-			<section>
-				<section data-background="http://i.giphy.com/hcpVSCSwDcKju.gif">
+			<section id="questions" data-background="#9C27B0">
+				<h1>Questions?</h1>
+				<div>
+					<div style="margin:1em 0;">
+						<img src="img/kxh_sq.jpg" border="0" style="border: none; border-radius: 50%; width: 2em; height: 2em; vertical-align: middle; margin: 0 .5em 0 0;">
+						<a href="mailto:keith.henry@evolutionjobs.co.uk">keith.henry@evolutionjobs.co.uk</a>
+					</div>
 
-				</section>
-				<section id="questions" data-background="#9C27B0">
-					<h1>Questions?</h1>
-					<div>
-						<div style="margin:1em 0;">
-							<img src="img/kxh_sq.jpg" border="0" style="border: none; border-radius: 50%; width: 2em; height: 2em; vertical-align: middle; margin: 0 .5em 0 0;">
-							<a href="mailto:keith.henry@evolutionjobs.co.uk">keith.henry@evolutionjobs.co.uk</a>
+					<div style="margin:1em 0;">
+						<div style="width: 32%; display: inline-block;">
+							<span class="fa fa-fw fa-twitter"></span> <a href="https://twitter.com/KHenry" target="_blank">@khenry</a>
 						</div>
-
-						<div style="margin:1em 0;">
-							<div style="width: 32%; display: inline-block;">
-								<span class="fa fa-fw fa-twitter"></span> <a href="https://twitter.com/KHenry" target="_blank">@khenry</a>
-							</div>
-							<div style="width: 32%; display: inline-block;">
-								<span class="fa fa-fw fa-github"></span> <a href="https://github.com/KeithHenry" target="_blank">KeithHenry</a>
-							</div>
-							<div style="width: 32%; display: inline-block;">
-								<span class="fa fa-fw fa-stack-overflow"></span>
-								<a href="http://stackexchange.com/users/689" target="_blank">
-									<img src="http://stackexchange.com/users/flair/689.png" width="208" height="58" alt="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites"
-										title="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites" style="border: 0; padding: 0; margin: 0; vertical-align: middle;">
-								</a>
-							</div>
+						<div style="width: 32%; display: inline-block;">
+							<span class="fa fa-fw fa-github"></span> <a href="https://github.com/KeithHenry" target="_blank">KeithHenry</a>
 						</div>
-						<div style="margin:1em 0;">
-							<span class="fa fa-fw fa-television"></span> 
-							<a href="https://keithhenry.github.io/jsmeetup-async-await">https://keithhenry.github.io/jsmeetup-async-await</a>
+						<div style="width: 32%; display: inline-block;">
+							<span class="fa fa-fw fa-stack-overflow"></span>
+							<a href="http://stackexchange.com/users/689" target="_blank">
+								<img src="http://stackexchange.com/users/flair/689.png" width="208" height="58" alt="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites"
+									title="profile for Keith on Stack Exchange, a network of free, community-driven Q&amp;A sites" style="border: 0; padding: 0; margin: 0; vertical-align: middle;">
+							</a>
 						</div>
 					</div>
-				</section>
+					<div style="margin:1em 0;">
+						<span class="fa fa-fw fa-television"></span> 
+						<a href="https://keithhenry.github.io/jsmeetup-async-await">https://keithhenry.github.io/jsmeetup-async-await</a>
+					</div>
+				</div>
 			</section>
 		</div>
 	</div>
